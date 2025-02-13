@@ -20,7 +20,8 @@ export default function RootLayout() {
 
   if(!fontsloaded) return null;
 
-  return (<Stack screenOptions={{headerShown:false}}>
+  return (
+  <Stack screenOptions={{headerShown:false}}>
     
     <Stack.Screen name="(root)/index"/>
     <Stack.Screen name="(tabs)"/>    

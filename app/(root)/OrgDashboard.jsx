@@ -1,12 +1,10 @@
 import { View, Text, StatusBar, ImageBackground, StyleSheet, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Link } from 'expo-router';
-
+import { useRouter } from 'expo-router';
 const OrgDashboard = () => {
 
-    const bgImage = require('../assets/images/bg-logo.jpg'); 
-
+  const router = useRouter();
   return (
     
       <SafeAreaView style={styles.container}>
@@ -15,16 +13,12 @@ const OrgDashboard = () => {
 
         <View style={styles.buttonContainer}>
 
-          <TouchableOpacity activeOpacity={0.85} style={[styles.button, styles.greenBorder]}>
-            <Link href="/">
+          <TouchableOpacity onPress={() => router.push('/Dashboard')} activeOpacity={0.85} style={[styles.button, styles.greenBorder]}>
               <Text style={styles.buttonText}>ADMIN</Text>
-            </Link>
           </TouchableOpacity>
 
-          <TouchableOpacity activeOpacity={0.85} style={[styles.button, styles.greenBorder]}>
-            <Link href="/">
+          <TouchableOpacity onPress={() => router.push('/StartMatch')} activeOpacity={0.85} style={[styles.button, styles.greenBorder]}>
               <Text style={styles.buttonText}>START MATCH</Text>
-            </Link>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
