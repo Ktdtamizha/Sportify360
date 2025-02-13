@@ -7,7 +7,7 @@ const PastT = () => {
 
   return (
       <View style={{flex:1}}>
-      <LinearGradient colors={['#e9f2f7', '#7eccf7', '#3a7bd5']}
+      <LinearGradient colors={['#7ff5a1','#c8e6d2']}
  style={{flex:1,paddingVertical:20}}>
       <Text style={{fontFamily:'Bangers',fontSize:60,color:'#0a8efa'}} className='text-center'>PAST TOURNAMENTS</Text>
       <ScrollView contentContainerStyle={styles.scrollView}>
@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
   matchCard: {
     width: '80%',
     height: 100,
-    backgroundColor: '#deeefa',
+    backgroundColor: '#fafffc',
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',

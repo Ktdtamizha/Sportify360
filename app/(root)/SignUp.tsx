@@ -48,9 +48,9 @@ export default function SignUp() {
  <TouchableOpacity onPress={handleSubmit}>
           <Text style={styles.btnLogin}>Submit</Text>
  </TouchableOpacity>
-        <Link href="/SignIn">
-              <Text style={styles.stext}>Already have an account..? Login</Text>
-         </Link>
+      <TouchableOpacity onPress={() => router.replace('/SignIn')}>
+          <Text style={styles.stext}>Already have an account..?   SignUp</Text>
+      </TouchableOpacity>
  </View>
  );
 }

@@ -33,12 +33,10 @@ export default function SignIn () {
  <TouchableOpacity onPress={handleSubmit}>
           <Text style={styles.btnLogin}>Submit</Text>
  </TouchableOpacity>
- <View>
-      <Text style={styles.stext}>Do not have an account.? </Text>
-      <TouchableOpacity onPress={() => router.replace('/SignUp')}>
-          <Text style={styles.stext}>SignUp</Text>
-      </TouchableOpacity>
- </View>
+
+  <TouchableOpacity onPress={() => router.replace('/SignUp')}>
+      <Text style={styles.stext}>Do not have an account.?   SignUp</Text>
+  </TouchableOpacity>
 
  </ImageBackground>
  </View>

@@ -11,7 +11,7 @@ export default function Explore() {
     <ImageBackground source={bgImage} style={styles.background} resizeMode="cover">
        <View style={styles.overlay} />
       <SafeAreaView className="flex-1 justify-center items-center">
-        <Text style={{fontFamily:'SpaceMono'}} className="text-white pt-8 text-4xl text-center">CHOOSE YOUR SPORT</Text>
+        <Text style={{fontSize:40,color:"#c8e6d2",fontStyle:'italic',fontWeight:'bold'}} className="text-center">CHOOSE YOUR<Text style={{fontSize:50,color:'white',fontWeight:'bold'}}>{'\n'}SPORT</Text></Text>
       <View className="w-full flex-1 justify-evenly items-center">
 
         <Link href="/Display">
@@ -55,6 +55,6 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject, 
-    backgroundColor: "rgba(0, 0, 0, 0.8)", 
+    backgroundColor: "rgba(0, 0, 0, 0.85)", 
   },
 })

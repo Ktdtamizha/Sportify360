@@ -9,7 +9,7 @@ const Upcoming = () => {
 
   return (
       <View style={{flex:1}}>
-      <LinearGradient colors={['#e5fae3', '#abffa3', '#34eb3a']}
+      <LinearGradient colors={['#7ff5a1','#c8e6d2']}
  style={{flex:1,paddingVertical:20}}>
       <Text style={{fontFamily:'Bangers',fontSize:60,color:'#0a8efa'}} className='text-center'>UPCOMING TOURNAMENTS</Text>
       <ScrollView contentContainerStyle={styles.scrollView}>
@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
   matchCard: {
     width: '80%',
     height: 100,
-    backgroundColor: '#dcf5dd',
+    backgroundColor: '#fafffc',
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',

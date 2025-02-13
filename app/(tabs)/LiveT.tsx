@@ -9,7 +9,7 @@ const LiveT = () => {
 
   return (
       <View style={{flex:1}}>
-      <LinearGradient colors={['#f0edeb','#e8bda0','#f27f33']} style={{flex:1,paddingVertical:20}}>
+      <LinearGradient colors={['#7ff5a1','#c8e6d2']} style={{flex:1,paddingVertical:20}}>
       <Text style={{fontFamily:'Bangers',fontSize:60,color:'#0a8efa'}} className='text-center'>LIVE TOURNAMENTS</Text>
       <ScrollView contentContainerStyle={styles.scrollView}>
             {livematches.map((match) => (
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
   matchCard: {
     width: '80%',
     height: 100,
-    backgroundColor: '#f7eddf',
+    backgroundColor: '#fafffc',
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',

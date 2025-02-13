@@ -8,7 +8,7 @@ const OrgDashboard = () => {
     const bgImage = require('../assets/images/bg-logo.jpg'); 
 
   return (
-    <ImageBackground source={bgImage} style={styles.background} resizeMode="cover">
+    
       <SafeAreaView style={styles.container}>
         
         <Text style={styles.title}>ORGANIZE TOURNAMENT</Text>
@@ -28,7 +28,6 @@ const OrgDashboard = () => {
           </TouchableOpacity>
         </View>
       </SafeAreaView>
-    </ImageBackground>
   )
 }
 
@@ -47,7 +46,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical:20,
-    backgroundColor: 'rgba(0,0,0,0.7)', 
+    backgroundColor: 'black', 
   },
   title: {
     color: 'white',
@@ -84,12 +83,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     textTransform: 'uppercase',
-    fontFamily: 'SpaceMono',
     textAlign: 'center',
   },
   greenBorder: {
     opacity:0.8,
-    borderColor: 'rgba(16, 185, 129, 0.5)',
+    borderColor: 'rgba(16, 185, 129, 0.9)',
     shadowColor: '#10B981',
     
   },
