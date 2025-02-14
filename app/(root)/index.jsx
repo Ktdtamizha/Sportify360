@@ -7,6 +7,7 @@ import { LinearGradient } from "expo-linear-gradient";
 export default function Index() {
 
   StatusBar.setHidden(true);
+  const img = require('../assets/images/tennis-ball.png');
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
@@ -19,18 +20,17 @@ export default function Index() {
           />
     <Text
         style={{
-          fontFamily: "Bangers",
-          fontSize: 70,
+          fontFamily: "RubikGlitch",
+          fontSize: 50,
           width: 300,
           lineHeight: 80,
           textAlign: "center",
-          color: "#FFF",
-          textShadowColor: "rgba(255, 255, 255, 0.8)",
-          textShadowOffset: { width: 3, height: 2 },
+          color: "#8bc34a",
           textShadowRadius: 50,
+          marginLeft:20,
         }}
       >
-        SPORTIFY
+        <Text style={{fontSize:70}} className="text-white">S</Text>P<Image style={{width:38,height:34}} source={img}></Image>RTIFY
       </Text>
       
         </View>
@@ -38,8 +38,8 @@ export default function Index() {
         <View className="mt-8 flex items-center">
       <LinearGradient
         colors={["#000000", "#4F4F4F"]}
-        start={[0, 0]}
-        end={[1, 1]}
+        start={[0,0]}
+        end={[1, 0]}
         style={{
           borderRadius:30,
         }}
@@ -47,15 +47,14 @@ export default function Index() {
         <Link href="/Explore" asChild>
           <TouchableOpacity activeOpacity={0.8} className="px-6 py-3">
             <Text
-              className="text-white font-bold tracking-widest"
+              className="tracking-widest"
               style={{
-                textShadowColor: "rgba(255, 255, 255, 0.6)",
-                textShadowOffset: { width: 1, height: 1 },
-                textShadowRadius: 3,
+                fontFamily:'RubikGlitch',
                 fontSize:25,
+                color:"#8bc34a"
               }}
             >
-              EXPLORE
+              <Text className="text-white">E</Text>XPLOR<Text className="text-white">E</Text>
             </Text>
           </TouchableOpacity>
         </Link>

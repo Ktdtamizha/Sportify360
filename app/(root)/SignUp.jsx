@@ -44,7 +44,6 @@ export default function SignUp() {
     <View style={styles.container}>
       <Text style={styles.title}>SIGN UP</Text>
 
-      {/* Input Fields */}
       <TextInput
         style={styles.input}
         placeholder="Enter Username"
@@ -69,12 +68,10 @@ export default function SignUp() {
         onChangeText={setPassword}
       />
 
-      {/* Submit Button */}
       <TouchableOpacity onPress={handleSubmit} style={styles.button}>
         <Text style={styles.buttonText}>SUBMIT</Text>
       </TouchableOpacity>
 
-      {/* Already Have an Account */}
       <TouchableOpacity onPress={() => router.replace("/SignIn")}>
         <Text style={styles.footerText}>
           Already have an account?{" "}
@@ -99,9 +96,6 @@ const styles = StyleSheet.create({
     color: "white",
     textTransform: "uppercase",
     letterSpacing: 2,
-    textShadowColor: "rgba(255,255,255,0.3)",
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 5,
     marginBottom: 30,
   },
   input: {

@@ -2,9 +2,9 @@ import { Link, router } from "expo-router";
 import React from "react";
 import { View, ImageBackground, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import img1 from '../assets/images/cricket.webp';
-import img2 from '../assets/images/hock.webp';
-import img3 from '../assets/images/football2.webp';
+import img1 from '../assets/images/cricket.png';
+import img2 from '../assets/images/hock.png';
+import img3 from '../assets/images/football2.png';
 
 
 export default function Explore() {
@@ -18,13 +18,11 @@ export default function Explore() {
       <Text
         style={{
           fontSize: 40,
-          fontFamily:'SpaceMono',
+          fontFamily:'RubikGlitch',
           color: "#A8E6A2",
           textAlign: "center",
-          textShadowColor: "rgba(0, 0, 0, 0.4)", 
-          textShadowOffset: { width: 2, height: 2 },
-          textShadowRadius: 5,
-          letterSpacing: 0, 
+          marginTop:15,
+          paddingLeft:15
         }}
       >ENTER
         <Text className="text-white"> ARENA</Text>
