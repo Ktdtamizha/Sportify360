@@ -5,24 +5,25 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   StatusBar,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { auth } from "../firebase.jsx"; 
+import { signInWithEmailAndPassword } from "firebase/auth";
 
 export default function SignIn() {
   const router = useRouter();
-
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");  
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState(null);
 
-  const handleSubmit = () => {
-    if (!username || !password) {
-      Alert.alert("Please fill in all fields!");
-      return;
+  const handleSubmit = async () => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push("/Organize");
+    } catch (error) {
+      setErrorMessage(error.message);
     }
-    Alert.alert("Login Successful!");
-    router.push("/Organize");
   };
 
   return (
@@ -31,13 +32,17 @@ export default function SignIn() {
       <View style={styles.container}>
         <Text style={styles.title}>LOGIN</Text>
 
+        {/* Error Message */}
+        {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
+
         {/* Input Fields */}
         <TextInput
           style={styles.input}
-          placeholder="Enter Username"
+          placeholder="Enter Email"
           placeholderTextColor="rgba(255, 255, 255, 0.7)"
-          value={username}
-          onChangeText={setUsername}
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
         />
         <TextInput
           style={styles.input}
@@ -56,8 +61,7 @@ export default function SignIn() {
         {/* Sign-Up Navigation */}
         <TouchableOpacity onPress={() => router.replace("/SignUp")}>
           <Text style={styles.footerText}>
-            Don't have an account?{" "}
-            <Text style={styles.signUpText}>Sign Up</Text>
+            Don't have an account? <Text style={styles.signUpText}>Sign Up</Text>
           </Text>
         </TouchableOpacity>
       </View>
@@ -131,5 +135,10 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
     textDecorationLine: "underline",
+  },
+  errorText: {
+    color: "red",
+    marginBottom: 10,
+    textAlign: "center",
   },
 });

@@ -1,0 +1,25 @@
+//git pull origin
+
+ if any changes made previously before pull;
+
+//git stash
+
+and after this 
+
+//git pull origin
+
+//firebase installation
+
+npx expo install firebase
+
+
+    firebase.auth().createUserWithEmailAndPassword(email,password)
+    .then((userCredential) => {
+      const user = userCredential.user;
+      firebase.firestore().collection('users').doc(user.uid).set({
+        email:user.email,
+        rolw:'user',
+      });
+      navigation.navigate('/');
+    })
+    .catch(error => setErrorMessege(error.message));

@@ -1,13 +1,9 @@
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from "react-native";
+import { auth, db } from "../firebase.jsx"; // Correct import
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { setDoc, doc } from "firebase/firestore";
+import { StyleSheet,View,Text,TouchableOpacity,TextInput, Alert } from "react-native";
+import { useState } from "react";
 
 export default function SignUp() {
   const router = useRouter();
@@ -16,29 +12,24 @@ export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]{2,6}$/;
-  const passwordLength = password.length >= 3 && password.length <= 10;
+  const passwordValid = password.length >= 6; // Firebase requires at least 6 characters
 
-  const handleSubmit = () => {
-    if (!username || !email || !password) {
-      Alert.alert("Please fill in all fields!");
-      return;
-    }
 
-    if (!emailRegex.test(email)) {
-      Alert.alert("Invalid email!", "Please enter a valid email id.");
-      return;
-    }
+const handleSubmit = async () => {
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
 
-    if (!passwordLength) {
-      Alert.alert(
-        "Invalid password!",
-        "Password must be between 3 and 10 characters."
-      );
-      return;
-    }
-    Alert.alert("Sign-Up Successful!");
-    router.push("/Organize");
-  };
+    await setDoc(doc(db, "users", user.uid), {
+      email: user.email,
+      role: "user",
+    });
+    Alert.alert("Signed up successfully");
+    router.push("/SignIn");
+  } catch (error) {
+    Alert.alert("Error", error.message);
+  }
+};
 
   return (
     <View style={styles.container}>
@@ -74,8 +65,7 @@ export default function SignUp() {
 
       <TouchableOpacity onPress={() => router.replace("/SignIn")}>
         <Text style={styles.footerText}>
-          Already have an account?{" "}
-          <Text style={styles.signInText}>Sign In</Text>
+          Already have an account? <Text style={styles.signInText}>Sign In</Text>
         </Text>
       </TouchableOpacity>
     </View>
