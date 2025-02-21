@@ -1,6 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import {  useRouter } from 'expo-router';
 import React from 'react';
+import {MotiView} from 'moti';
 import { View, Text, StyleSheet, ImageBackground, FlatList, TouchableOpacity } from 'react-native';
 
 export default function Profile() {
@@ -21,11 +22,17 @@ const display = [
       contentContainerStyle={{flexGrow:1}}
       renderItem={({item}) =>
         <TouchableOpacity onPress={() => router.push(`/${item.link}`)}>
+            <MotiView
+    from={{ opacity: 0, translateY: 20 }}
+    animate={{ opacity: 1, translateY: 0 }}
+    transition={{ type: "spring", damping: 20 }}
+  >
         <ImageBackground source={item.image} style={styles.card} imageStyle={styles.image}>
           <View style={styles.overlay}>
             <Text style={styles.text}>{item.type}</Text>
           </View>
         </ImageBackground>
+        </MotiView>
         </TouchableOpacity>
       }
       style={{marginBottom:30,
