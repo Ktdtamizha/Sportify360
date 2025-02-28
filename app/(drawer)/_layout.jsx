@@ -1,68 +1,72 @@
-import {  StyleSheet, TouchableOpacity } from 'react-native'
-import { createDrawerNavigator } from '@react-navigation/drawer'
-import TabLayout from './(tabs)/_layout.jsx'
+import { StyleSheet, TouchableOpacity, View, Image, StatusBar } from 'react-native';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import TabLayout from './(tabs)/_layout.jsx';
 import { Ionicons } from '@expo/vector-icons';
 import CustomDrawer from '../../components/CustomDrawer.jsx';
-import SignIn from '../(root)/SignIn.jsx';
-import SignUp from '../(root)/SignUp.jsx';
+import { Text } from 'react-native';
+import TournamentDetails from '../(root)/OrgDashboard.jsx';
 
 const Drawer = createDrawerNavigator();
 
 const DrawerLayout = () => {
   return (
-    <Drawer.Navigator drawerContent={(props) => <CustomDrawer {...props}/>} screenOptions={{headerShown:false,headerLeftContainerStyle:{marginBottom:20},headerRightContainerStyle:{marginBottom:20},headerTitleContainerStyle:{marginBottom:20}}}>
-        <Drawer.Screen
-        name="Home"
-        component={TabLayout}
-        options={{
+    <>
+    <StatusBar hidden={false}/>
+      <Drawer.Navigator 
+        drawerContent={(props) => <CustomDrawer {...props}/>} 
+        screenOptions={{
           headerShown: true,
           headerTransparent: true,
-          headerTitle:'',
-          headerTitleAlign:'center',
-          headerTitleStyle: {
-            fontFamily:'RubikGlitch',
-            fontSize: 24,
-            fontWeight: 'bold',
-            color: '#333', 
-            letterSpacing: 2,
-           
-          },
-          headerTintColor:'black',
+          headerTitleAlign: 'left',
+          headerStyle: { backgroundColor: 'rgba(0, 128, 0, 0.7)' },
+          headerTitle: () => (    
+          <View style={styles.headerTitleContainer}>
+            <Image source={require('../assets/images/pnglogo.png')} style={styles.logo} />
+            <Text style={styles.headerTitle}>PORTIFY</Text>
+          </View>),
+          headerTintColor: 'white',
           headerRight: () => (
             <TouchableOpacity onPress={() => {}} style={styles.headerRight}>
-              <Ionicons name="notifications-outline" size={28} color="black"/>
+              <Ionicons name="notifications-outline" size={28} color="white"/>
             </TouchableOpacity>
           ),
         }}
-      />
-      <Drawer.Screen name='Login'
-      component={SignIn}/>
-      <Drawer.Screen name='SignUp'
-      component={SignUp}/>
+      >
+        <Drawer.Screen name="Home" component={TabLayout} />
+        <Drawer.Screen name="Admin" component={TournamentDetails} />
       </Drawer.Navigator>
-  )
-}
+    </>
+  );
+};
 
-export default DrawerLayout
+export default DrawerLayout;
 
 const styles = StyleSheet.create({
-    headerLeft: {
-      marginLeft: 3,
+  headerTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingBottom:0,
     },
-    profileImage: {
-      height: 40,
-      width: 40,
-      borderRadius: 50, 
-    },
-    headerRight: {
-      marginRight: 5,
-    },
-    tabBarStyle: {
-      backgroundColor: '#C0E990',
-      borderTopWidth: 0,
-      paddingBottom: 10,
-    },
-    iconContainer: {
-      alignItems: 'center',
-    }
-  });
+  logo: {
+    width: 20,
+    height: 30,
+    marginBottom:2,
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontFamily:'RubikGlitch',
+    color: 'white',
+    letterSpacing: 2,
+  },
+  headerRight: {
+    marginRight: 10,
+  },
+  tabBarStyle: {
+    backgroundColor: '#C0E990',
+    borderTopWidth: 0,
+    paddingBottom:0,
+  },
+  iconContainer: {
+    alignItems:"center",
+  }
+});

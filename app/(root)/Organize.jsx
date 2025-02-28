@@ -1,175 +1,179 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, ImageBackground ,TouchableOpacity, StyleSheet, Alert,  StatusBar, ScrollView, KeyboardAvoidingView, Platform  } from 'react-native';
+import { 
+  Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, View, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard 
+} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import { db } from '../firebase';
+import RNPickerSelect from 'react-native-picker-select';
+import { auth } from '../firebase';
 
-export default function OrganizeScreen( {navigation} ) { 
+export default function OrganizeScreen() {
+  const [formData, setFormData] = useState({
+    sport:'',
+    name: '',
+    startDate: new Date(),
+    endDate: new Date(),
+    location: '',
+    maxTeams: 0,
+    prize: 0,
+    contactInfo: 0,
+  });
+
+  const [showPicker, setShowPicker] = useState({ key: null });
+
+  const handleDateChange = (key, event, selectedDate) => {
+    if (selectedDate) {
+      setFormData((prev) => ({ ...prev, [key]: selectedDate }));
+    }
+    setShowPicker({ key: null }); 
+  };
+
+  const handleInputChange = (key, value) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSubmit = async () => {
+    if (!auth.currentUser) {
+      Alert.alert('Error', 'You must be logged in to create a tournament.');
+      return;
+    }
   
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
-  const [lastDate, setLastDate] = useState(new Date());
-  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-  const [showLastDatePicker, setShowLastDatePicker] = useState(false);
-
-
-  const onStartDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || startDate;
-    setShowStartDatePicker(false);  
-    setStartDate(currentDate);
+    if (!formData.name || !formData.location || !formData.maxTeams || !formData.contactInfo) {
+      Alert.alert('Error', 'Please fill all required fields.');
+      return;
+    }
+  
+    try {
+      const docRef = await addDoc(collection(db, 'Tournaments'), {
+        sport: formData.sport,
+        name: formData.name,
+        startDate: Timestamp.fromDate(formData.startDate),
+        endDate: Timestamp.fromDate(formData.endDate),
+        location: formData.location,
+        maxTeams: formData.maxTeams,  
+        prize: formData.prize,      
+        contactInfo: formData.contactInfo,
+        adminId: auth.currentUser.uid,
+        participants:[],
+        acceptedTeams:[],
+      });
+  
+      Alert.alert('Success', `Tournament Created! ID: ${docRef.id}`);
+      router.push('LiveT');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to create tournament.');
+      console.error('Firestore Error:', error);
+    }
   };
 
-  const onEndDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || endDate;
-    setShowEndDatePicker(false);  
-    setEndDate(currentDate);
-  };
-
-  const onLastDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || endDate;
-    setShowLastDatePicker(false);  
-    setLastDate(currentDate);
-  };
-
-  const handleSubmit = () => {
-    
-    Alert.alert('Tournament Created!',);
-    router.push('OrgDashboard');
-  };
-
-  return(
-  <SafeAreaView style={styles.container}>
-  <ScrollView>
-  <Text style={styles.hText}>Organize Form</Text>
-  <Text style={styles.text}>Tournament Name</Text>
-  <TextInput style={styles.iText} placeholder='Enter tournament name' placeholderTextColor='white'/>
-  <Text style={styles.text}>Tournament Start Date</Text>
-  <TouchableOpacity onPress={() => setShowStartDatePicker(true)}>
+  return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <LinearGradient colors={['#f0fbef', '#c0efbb']} style={{ flex: 1 }}>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+          style={{ flex: 1 }}
+        >
+          <ScrollView style={{ marginTop: 90}} showsVerticalScrollIndicator={false}>
+            <Text style={styles.hText}>Organize Tournament</Text>
+            <Text style={{marginLeft:14,marginTop:10,fontSize:16}}>Select Sport</Text>
+              <RNPickerSelect 
+              onValueChange={(value)=>setFormData((prev) => ({...prev,sport:value}))}
+              items={[
+                {label:'Cricket',value:'Cricket'},
+                {label:'Volleyball',value:'Volleyball'},
+                {label:'Football',value:'Football'},
+              ]}
+              style={pickerSelectStyles}
+              placeholder={{label:"Choose any sport",value:null}}/>
+            <Text style={styles.text}>Tournament Name</Text>
             <TextInput
               style={styles.iText}
-              placeholder="Start Date"
-              value={startDate.toDateString()}
-              editable={false}
-              placeholderTextColor="white"
+              placeholder="Enter tournament name"
+              value={formData.name}
+              onChangeText={(value) => handleInputChange('name', value)}
+              placeholderTextColor="black"
             />
-          </TouchableOpacity>
-          {showStartDatePicker && (
-            <DateTimePicker
-              value={startDate}
-              mode="date"
-              display="calendar"
-              onChange={onStartDateChange}
-            />
-          )}
 
-<Text style={styles.text}>Tournament End Date</Text>          
-<TouchableOpacity onPress={() => setShowEndDatePicker(true)}>
+            {['startDate', 'endDate'].map((key, index) => (
+              <View key={index}>
+                <Text style={styles.text}>{key.replace('Date', ' Date')}</Text>
+                <TouchableOpacity onPress={() => setShowPicker({ key })}>
+                  <TextInput style={styles.iText} value={formData[key].toDateString()} editable={false} />
+                </TouchableOpacity>
+                {showPicker.key === key && (
+                  <DateTimePicker value={formData[key]} mode="date" onChange={(e, date) => handleDateChange(key, e, date)} />
+                )}
+              </View>
+            ))}
+
+            <Text style={styles.text}>Location</Text>
             <TextInput
               style={styles.iText}
-              placeholder="End Date"
-              value={endDate.toDateString()}
-              editable={false}
-              placeholderTextColor="white"
+              placeholder="Enter location"
+              value={formData.location}
+              onChangeText={(value) => handleInputChange('location', value)}
+              placeholderTextColor="black"
             />
-          </TouchableOpacity>
-          {showEndDatePicker && (
-            <DateTimePicker
-              value={endDate}
-              mode="date"
-              display="calendar"
-              onChange={onEndDateChange}
-          />
-          )}
-  <Text style={styles.text}>Tournament Location</Text>
-  <TextInput style={styles.iText} placeholder='Enter location' placeholderTextColor='white'/>
-  <Text style={styles.text}>Max No. of Participants</Text>
-  <TextInput style={styles.iText} placeholder='Enter maximum participants' placeholderTextColor='white' keyboardType= "numeric"/>
-  <Text style={styles.text}>Registration Deadline</Text>
-  <TouchableOpacity onPress={() => setShowLastDatePicker(true)}>
+
+            <Text style={styles.text}>Max No of Teams</Text>
             <TextInput
               style={styles.iText}
-              placeholder="Enter registration deadline"
-              value={lastDate.toDateString()}
-              editable={false}
-              placeholderTextColor="white"
+              placeholder="Enter max teams"
+              value={formData.maxTeams}
+              onChangeText={(value) => handleInputChange('maxTeams', value)}
+              keyboardType="numeric"
+              placeholderTextColor="black"
             />
-          </TouchableOpacity>
-          {showLastDatePicker && (
-            <DateTimePicker
-              value={lastDate}
-              mode="date"
-              display="calendar"
-              onChange={onLastDateChange}
-            />
-          )}
 
-  <Text style={styles.text}>Prize Details</Text>
-  <TextInput style={styles.multiline} placeholder="Enter prize details" multiline={true} placeholderTextColor='white'/>
-  <Text style={styles.text}>Rules</Text>
- <TextInput style={styles.multiline} placeholder="Enter rules" multiline={true} placeholderTextColor='white' />
- <Text style={styles.text}>Contact Information</Text>
-  <TextInput style={styles.iText} placeholder='Enter Phone NUmber' placeholderTextColor='white'/>
-  <TouchableOpacity onPress={(handleSubmit)}>
-        <Text style={styles.btnLogin}>Submit</Text>
- </TouchableOpacity>
-  </ScrollView>
-  </SafeAreaView>
+            <Text style={styles.text}>Prize Details</Text>
+            <TextInput
+              style={styles.iText}
+              placeholder="Enter prize amount"
+              value={formData.prize}
+              onChangeText={(value) => handleInputChange('prize', value)}
+              keyboardType="numeric"
+              placeholderTextColor="black"
+            />
+
+            <Text style={styles.text}>Contact Information</Text>
+            <TextInput
+              style={styles.iText}
+              placeholder="Enter contact info"
+              value={formData.contactInfo}
+              onChangeText={(value) => handleInputChange('contactInfo', value)}
+              placeholderTextColor="black"
+              keyboardType="phone-pad"
+            />
+
+            <TouchableOpacity onPress={handleSubmit}>
+              <Text style={styles.btnLogin}>Submit</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </LinearGradient>
+    </TouchableWithoutFeedback>
   );
 }
 
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: "black",
-    },
-    hText: {
-      color: 'white',
-      textAlign: 'center',
-      fontSize: 30,
-      fontWeight: 'bold',
-      marginTop: 20,
-    },
-    image: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 50,
-    },
-    text: {
-      paddingHorizontal: 10,
-      color: 'white',
-      fontSize: 15,
-      marginTop: 10,
-    },
-    iText: {
-      padding: 10,
-      borderColor: 'white',
-      borderWidth: 2,
-      color: 'white',
-      fontSize: 15,
-      margin: 10,
-    },
-
-  btnLogin: {
-    backgroundColor: '#65167a',
-    color: 'white',
-    textAlign: 'center',
-    fontWeight: 'bold',
-    borderRadius: 15,
-    padding: 15,
-    width: '60%',
-    margin: 10,
-    alignSelf: 'center',
+const styles = StyleSheet.create({
+  hText: { color: 'green', textAlign: 'center', fontSize: 30, fontWeight: 'bold', marginTop: 20 },
+  text: { paddingHorizontal: 10, color: 'black', fontSize: 15, marginTop: 10 },
+  iText: { padding: 10, borderColor: 'black', borderWidth: 2, color: 'black', fontSize: 15, margin: 10 },
+  btnLogin: { backgroundColor: 'green', color: 'white', textAlign: 'center', fontWeight: 'bold', borderRadius: 15, padding: 15, width: '60%', margin: 10, alignSelf: 'center' },
+});
+const pickerSelectStyles = {
+  inputAndroid: {
+    borderColor: 'black',
+    borderWidth: 2,
+    borderRadius: 5,
+    fontSize: 15,
+    backgroundColor: 'transparent',
   },
- multiline: {
-   borderColor: 'white',
-   fontSize: 15,
-   minHeight: '100',
-   textAlignVertical: 'top',
-   borderWidth: 2,
-   padding: 10,
-   margin: 10,
-   width: '95%',
-   alignSelf: 'center',
- },
-  });
+  placeholder: {
+    color: 'gray',
+    fontSize: 15,
+  },
+};

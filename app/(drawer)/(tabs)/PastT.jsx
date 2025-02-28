@@ -1,121 +1,217 @@
-import { FlatList, ImageBackground, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useState } from 'react';
-import matches from '../../matches.js';
+import React, { useEffect, useState } from 'react';
+import { Text, View, FlatList, StyleSheet, Dimensions, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../../firebase';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-const categories = ['All', 'Cricket', 'Volleyball', 'Football']; 
+import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
+import { TabView, TabBar } from 'react-native-tab-view';
+import { useNavigation } from '@react-navigation/native';
 
-const PastT = () => {
-  const [selectedCategory, setSelectedCategory] = useState('All'); 
+const categories = [
+  { key: 'Cricket', title: 'Cricket' },
+  { key: 'Volleyball', title: 'Volleyball' },
+  { key: 'Football', title: 'Football' },
+];
 
-  const filteredMatches = selectedCategory === 'All' 
-    ? matches.filter((item) => item.type === 'Past') 
-    : matches.filter((item) => item.type === 'Past' && item.category === selectedCategory);
+export default function ViewTournamentsScreen() {
+  const [tournaments, setTournaments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [index, setIndex] = useState(0);
+  const navigation = useNavigation();
 
-  return (
-    <LinearGradient colors={['#f0fbef','#c0efbb']} style={{flex:1}}>
-    <SafeAreaView style={styles.container}>
-      
-      <View style={styles.categoryContainer}>
-        {categories.map((category) => (
-          <Pressable
-            key={category} 
-            style={[
-              styles.categoryButton, 
-              selectedCategory === category && styles.selectedCategory 
-            ]}
-            onPress={() => setSelectedCategory(category)} 
-          >
-                        <Text style={[
-                          styles.categoryText,
-                          selectedCategory === category && styles.selectedCategoryText
-                        ]}>{category}</Text>
-          </Pressable>
-        ))}
-      </View>
+  useEffect(() => {
+    const fetchTournaments = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'Tournaments'));
+        const today = new Date();
 
-      {/* Filtered Matches */}
+        const tournamentsList = querySnapshot.docs.map((doc) => {
+          const data = doc.data();
+          const startDate = data.startDate ? data.startDate.toDate() : null;
+          const endDate = data.endDate ? data.endDate.toDate() : null;
+
+          let status = 'Upcoming';
+          if (startDate && endDate) {
+            if (startDate > today) {
+              status = 'Upcoming';
+            } else if (startDate <= today && endDate >= today) {
+              status = 'Live';
+            } else if (endDate < today) {
+              status = 'Past';
+            }
+          }
+
+          return { id: doc.id, ...data, startDate, endDate, status };
+        });
+        setTournaments(tournamentsList);
+      } catch (error) {
+        console.error('Error fetching tournaments:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTournaments();
+  }, []);
+
+  const renderScene = ({ route }) => {
+    const liveTournaments = tournaments.filter((t) => t.status === 'Past' && t.sport === route.key);
+
+    if (loading) {
+      return (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="green" />
+        </View>
+      );
+    }
+
+    return (
       <FlatList
-        data={filteredMatches}
-        keyExtractor={(item) => item.id.toString()}
-        showsVerticalScrollIndicator={false}
+        data={liveTournaments}
+        keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContainer}
         renderItem={({ item }) => (
-          <TouchableOpacity>
-            <ImageBackground source={item.image} style={styles.card} imageStyle={styles.image}>
-              <View style={styles.overlay}>
-                <Text style={styles.text}>{item.name}</Text>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('TournamentMatches', { tournamentId: item.id })}
+          >
+            <View style={styles.cardContainer}>
+              <View style={styles.card}>
+                <Text style={styles.tournamentName}>{item.name || 'No Name'}</Text>
+                <View style={styles.infoRow}>
+                  <MaterialIcons name="place" size={18} color="gray" />
+                  <Text style={styles.location}>{item.location || 'Unknown'}</Text>
+                </View>
+                <View style={styles.infoRow}>
+                  <FontAwesome5 name="calendar" size={16} color="gray" />
+                  <Text style={styles.details}>
+                    {item.startDate ? item.startDate.toDateString() : 'N/A'} -{' '}
+                    {item.endDate ? item.endDate.toDateString() : 'N/A'}
+                  </Text>
+                </View>
+                <View style={styles.badgeContainer}>
+                  <Text style={styles.badge}>🏆 ₹{item.prize || '0'}</Text>
+                  <Text style={styles.badge}>👥 {item.maxTeams || 'N/A'} Teams</Text>
+                </View>
               </View>
-            </ImageBackground>
+            </View>
           </TouchableOpacity>
         )}
+        ListEmptyComponent={() => (
+          <View style={styles.noData}>
+            <Text style={styles.noDataText}>No live tournaments found for {route.title}.</Text>
+          </View>
+        )}
       />
-    </SafeAreaView>
+    );
+  };
+
+  const layout = Dimensions.get('window').width;
+  const [routes] = useState(categories);
+
+  return (
+    <LinearGradient colors={['#f8f9fa', '#e9ecef']} style={{ flex: 1 }}>
+      <SafeAreaView style={styles.container}>
+        <TabView
+          navigationState={{ index, routes }}
+          renderScene={renderScene}
+          onIndexChange={setIndex}
+          initialLayout={{ width: layout }}
+          renderTabBar={(props) => (
+            <TabBar
+              {...props}
+              renderLabel={({ route }) => (
+                <Text style={{ color: 'white', fontWeight: 'bold' }}>{route.title}</Text>
+              )}
+              indicatorStyle={styles.tabBarIndicator}
+              style={styles.tabBar}
+            />
+          )}
+        />
+      </SafeAreaView>
     </LinearGradient>
   );
-};
-
-export default PastT
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  categoryContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginVertical: 15,
-    marginTop:70,
-  },
-  selectedCategoryText: {
-    color:'white',
-  },
-  categoryButton: {
-    backgroundColor: '#ddd',
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    marginHorizontal: 5,
-  },
-  selectedCategory: {
-    backgroundColor: 'green',
-  },
-  categoryText: {
-    color: 'black',
-    fontWeight: 'bold',
+    marginTop: 64,
   },
   listContainer: {
-    flexGrow: 1,
     paddingBottom: 30,
     alignItems: 'center',
   },
-  card: {
-    marginTop: 20,
-    width: 350,
-    height: 190,
-    borderRadius: 20,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 6,
-  },
-  image: {
-    borderRadius: 16,
-  },
-  overlay: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    height: 50,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+  loadingContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  text: {
-    color: 'white',
+  cardContainer: {
+    marginVertical: 10,
+    width: 360,
+  },
+  card: {
+    backgroundColor: 'white',
+    borderRadius: 15,
+    padding: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  tournamentName: {
     fontSize: 18,
     fontWeight: 'bold',
+    marginBottom: 5,
+    color: '#343a40',
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  location: {
+    color: 'gray',
+    fontSize: 14,
+    marginLeft: 5,
+  },
+  details: {
+    color: 'gray',
+    fontSize: 14,
+    marginLeft: 5,
+  },
+  badgeContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  badge: {
+    backgroundColor: '#e9ecef',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    color: '#495057',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  tabBar: {
+    backgroundColor: 'green',
+    elevation: 5,
+    height: 50,
+  },
+  tabBarIndicator: {
+    backgroundColor: 'white',
+    height: 3,
+  },
+  noData: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  noDataText: {
+    fontSize: 16,
+    color: 'gray',
   },
 });

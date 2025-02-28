@@ -1,6 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Text, View, StyleSheet, StatusBar } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 const Tab = createBottomTabNavigator();
 import LiveT from './LiveT';
@@ -8,9 +7,23 @@ import PastT from './PastT';
 import Up from './Upcoming';
 import Hub from './Hub';
 import Add from './Add';
+import { useEffect, useState } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '@/app/firebase';
 
 
 export default function TabLayout() {
+  const [userLoggedIn, setUserLoggedIn] = useState(false);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setUserLoggedIn(true);
+      } else {
+        setUserLoggedIn(false);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   return (
     <>
@@ -49,6 +62,7 @@ export default function TabLayout() {
             ),
           }}
         />
+        {userLoggedIn ?
         <Tab.Screen
           name="Add"
           component={Add}
@@ -60,7 +74,7 @@ export default function TabLayout() {
               </View>
             ),
           }}
-        />
+        /> : null}
         <Tab.Screen
           name="Upcoming"
           component={Up}

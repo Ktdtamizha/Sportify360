@@ -2,10 +2,10 @@ import { Stack } from "expo-router";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen"; 
 import { useEffect } from "react";
-import { useNavigation } from "@react-navigation/native";
 import "./global.css";
-import { Image, StatusBar, StyleSheet, TouchableOpacity } from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { StatusBar } from "react-native";
+import TournamentMatchesScreen from './(root)/TournamentMatchesScreen.jsx';
+
 
 SplashScreen.preventAutoHideAsync();
 
@@ -32,7 +32,8 @@ export default function RootLayout() {
   return (
     <>
     <StatusBar hidden={true}/>
-    <Stack screenOptions={{ headerShown: false }}/>
+    <Stack screenOptions={{ headerShown: false }}>
+      </Stack>
     </>
   );
 }

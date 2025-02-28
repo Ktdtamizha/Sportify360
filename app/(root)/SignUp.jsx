@@ -1,74 +1,72 @@
 import { useRouter } from "expo-router";
-import { auth, db } from "../firebase.jsx"; // Correct import
+import { auth, db } from "../firebase.jsx";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { setDoc, doc } from "firebase/firestore";
-import { StyleSheet,View,Text,TouchableOpacity,TextInput, Alert } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  Alert,
+  ActivityIndicator,
+  Keyboard,
+  TouchableWithoutFeedback,
+} from "react-native";
 import { useState } from "react";
 
 export default function SignUp() {
   const router = useRouter();
-
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]{2,6}$/;
-  const passwordValid = password.length >= 6; // Firebase requires at least 6 characters
+  const [loading, setLoading] = useState(false);
 
+  const handleSubmit = async () => {
+    if (!username.trim() || !email.trim() || !password.trim()) {
+      Alert.alert("Error", "All fields are required.");
+      return;
+    }
 
-const handleSubmit = async () => {
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+    setLoading(true);
 
-    await setDoc(doc(db, "users", user.uid), {
-      email: user.email,
-      role: "user",
-    });
-    Alert.alert("Signed up successfully");
-    router.push("/SignIn");
-  } catch (error) {
-    Alert.alert("Error", error.message);
-  }
-};
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      await setDoc(doc(db, "users", user.uid), {
+        username: username.trim(),
+        email: user.email,
+        role: "user",
+        joinedtournaments: [],
+      });
+
+      Alert.alert("Success", "Account created successfully!", [
+        { text: "OK", onPress: () => router.replace("/SignIn") },
+      ]);
+    } catch (error) {
+      console.error("Firestore Write Error:", error);
+      Alert.alert("Error", getFriendlyErrorMessage(error.code));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>SIGN UP</Text>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Enter Username"
-        placeholderTextColor="rgba(255, 255, 255, 0.7)"
-        value={username}
-        onChangeText={setUsername}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Enter Email"
-        placeholderTextColor="rgba(255, 255, 255, 0.7)"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Enter Password"
-        placeholderTextColor="rgba(255, 255, 255, 0.7)"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-
-      <TouchableOpacity onPress={handleSubmit} style={styles.button}>
-        <Text style={styles.buttonText}>SUBMIT</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => router.replace("/SignIn")}>
-        <Text style={styles.footerText}>
-          Already have an account? <Text style={styles.signInText}>Sign In</Text>
-        </Text>
-      </TouchableOpacity>
-    </View>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+        <Text style={styles.title}>SIGN UP</Text>
+        <TextInput style={styles.input} placeholder="Enter Username" value={username} onChangeText={setUsername} />
+        <TextInput style={styles.input} placeholder="Enter Email" value={email} onChangeText={setEmail} />
+        <TextInput style={styles.input} placeholder="Enter Password" secureTextEntry value={password} onChangeText={setPassword} />
+        <TouchableOpacity onPress={handleSubmit} style={styles.button} disabled={loading}>
+          {loading ? <ActivityIndicator color="white" /> : <Text style={styles.buttonText}>SUBMIT</Text>}
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => router.replace("/SignIn")}>
+          <Text style={styles.footerText}>Already have an account? <Text style={styles.signInText}>Sign In</Text></Text>
+        </TouchableOpacity>
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -113,6 +111,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 8,
     elevation: 5,
+  },
+  buttonDisabled: {
+    opacity: 0.5,
   },
   buttonText: {
     color: "white",

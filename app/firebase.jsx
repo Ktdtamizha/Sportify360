@@ -1,6 +1,5 @@
-import { initializeApp, getApps } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { 
-  getAuth, 
   initializeAuth, 
   getReactNativePersistence 
 } from "firebase/auth";
@@ -8,17 +7,17 @@ import { getFirestore } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Firebase configuration
-export default firebaseConfig = {
-  apiKey: "AIzaSyDoOHztepbM5OIGapZEPPUcW69xB2R52x0",
-  authDomain: "sportifylogin-5fc30.firebaseapp.com",
-  projectId: "sportifylogin-5fc30",
-  storageBucket: "sportifylogin-5fc30.appspot.com", // Fix the incorrect storage bucket domain
-  messagingSenderId: "432220010392",
-  appId: "1:432220010392:web:cb41803b0d755a446c9ded"
+const firebaseConfig = {
+  apiKey: "AIzaSyCdW5NGED46QfeCQNESP3bq4Wyc6hr786w",
+  authDomain: "sportify-auth-6d8d5.firebaseapp.com",
+  projectId: "sportify-auth-6d8d5",
+  storageBucket: "sportify-auth-6d8d5.appspot.com", 
+  messagingSenderId: "210341700027",
+  appId: "1:210341700027:web:de0e4e12327fbaa896649e",
 };
 
-// Initialize Firebase app (only if not already initialized)
-const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+// Initialize Firebase App
+const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
 // Initialize Firebase Auth with AsyncStorage for persistence
 const auth = initializeAuth(app, {
@@ -28,5 +27,4 @@ const auth = initializeAuth(app, {
 // Initialize Firestore
 const db = getFirestore(app);
 
-// Export Firebase services correctly
 export { app, auth, db };
