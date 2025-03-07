@@ -4,7 +4,7 @@ import { collection, query, where, onSnapshot, updateDoc, doc } from "firebase/f
 import { db, auth } from "../../firebase.jsx";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function TournamentDetails({ navigation }) {
+export default function TournamentDetails() {
   const [tournaments, setTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -14,7 +14,6 @@ export default function TournamentDetails({ navigation }) {
 
     const q = query(collection(db, "Tournaments"), where("adminId", "==", userId));
 
-    // 🔹 Real-time listener for tournaments
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const tournamentList = [];
       querySnapshot.forEach((doc) => {
@@ -25,7 +24,6 @@ export default function TournamentDetails({ navigation }) {
       setLoading(false);
     });
 
-    // Cleanup function
     return () => unsubscribe();
   }, []);
 
@@ -35,10 +33,8 @@ export default function TournamentDetails({ navigation }) {
   
     const selectedTeam = tournament.participants[teamIndex];
   
-    // Remove selected team from participants if rejected
     let updatedParticipants = tournament.participants.filter((_, index) => index !== teamIndex);
   
-    // If approved, add to acceptedTeams
     let updatedAcceptedTeams = [...(tournament.acceptedTeams || [])];
     if (status === "approved") {
       updatedAcceptedTeams.push({ ...selectedTeam, status: "approved" });
@@ -50,7 +46,6 @@ export default function TournamentDetails({ navigation }) {
         acceptedTeams: updatedAcceptedTeams,
       });
   
-      // Update UI immediately after database update
       setTournaments((prevTournaments) =>
         prevTournaments.map((t) =>
           t.id === tournamentId ? { ...t, participants: updatedParticipants, acceptedTeams: updatedAcceptedTeams } : t

@@ -1,15 +1,37 @@
-import React, { useState} from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, Keyboard, TouchableWithoutFeedback, KeyboardAvoidingView, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { auth, db } from "../firebase.jsx";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  Easing,
+  withSpring,
+} from "react-native-reanimated";
 
 export default function SignIn() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState(null);
+
+  const titleOpacity = useSharedValue(0);
+  const inputOpacity = useSharedValue(0);
+  const buttonScale = useSharedValue(1);
+
+  useEffect(() => {
+    titleOpacity.value = withTiming(1, { duration: 1000, easing: Easing.ease });
+    inputOpacity.value = withTiming(1, { duration: 1000, easing: Easing.ease });
+  }, []);
+
+  const animateButton = () => {
+    buttonScale.value = withSpring(0.9, { damping: 2, stiffness: 100 }, () => {
+      buttonScale.value = withSpring(1);
+    });
+  };
 
   const handleSubmit = async () => {
     try {
@@ -28,20 +50,69 @@ export default function SignIn() {
     }
   };
 
+  const titleStyle = useAnimatedStyle(() => ({
+    opacity: titleOpacity.value,
+  }));
+
+  const inputStyle = useAnimatedStyle(() => ({
+    opacity: inputOpacity.value,
+  }));
+
+  const buttonStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: buttonScale.value }],
+  }));
+
   return (
-    <View style={styles.container}>
-      <StatusBar backgroundColor="#16b8c9" />
-      <Text style={styles.title}>LOGIN</Text>
-      {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
-      <TextInput style={styles.input} placeholder="Enter Email" value={email} onChangeText={setEmail} />
-      <TextInput style={styles.input} placeholder="Enter Password" secureTextEntry value={password} onChangeText={setPassword} />
-      <TouchableOpacity onPress={handleSubmit} style={styles.button}>
-        <Text style={styles.buttonText}>SUBMIT</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.replace("/SignUp")}>
-        <Text style={styles.footerText}>Don't have an account? <Text style={styles.signUpText}>Sign Up</Text></Text>
-      </TouchableOpacity>
-    </View>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
+          <StatusBar backgroundColor="#16b8c9" />
+
+          <Animated.Text style={[styles.title, titleStyle]}>LOGIN</Animated.Text>
+
+          {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
+
+          <Animated.View style={[styles.inputContainer, inputStyle]}>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Email"
+              placeholderTextColor="rgba(255,255,255,0.7)"
+              value={email}
+              onChangeText={setEmail}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Password"
+              placeholderTextColor="rgba(255,255,255,0.7)"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
+          </Animated.View>
+
+          <Animated.View style={[styles.buttonContainer, buttonStyle]}>
+            <TouchableOpacity
+              onPress={() => {
+                animateButton();
+                handleSubmit();
+              }}
+              style={styles.button}
+            >
+              <Text style={styles.buttonText}>SUBMIT</Text>
+            </TouchableOpacity>
+          </Animated.View>
+
+          <TouchableOpacity onPress={() => router.replace("/SignUp")}>
+            <Text style={styles.footerText}>
+              Don't have an account? <Text style={styles.signUpText}>Sign Up</Text>
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -69,6 +140,10 @@ const styles = StyleSheet.create({
     textShadowRadius: 5,
     marginBottom: 30,
   },
+  inputContainer: {
+    width: "100%",
+    alignItems: "center",
+  },
   input: {
     width: "85%",
     color: "white",
@@ -80,6 +155,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: "center",
   },
+  buttonContainer: {
+    width: "100%",
+    alignItems: "center",
+    marginTop: 40,
+  },
   button: {
     backgroundColor: "black",
     borderColor: "white",
@@ -87,7 +167,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 15,
     width: "60%",
-    marginTop: 40,
     alignItems: "center",
     shadowColor: "white",
     shadowOffset: { width: 0, height: 4 },
