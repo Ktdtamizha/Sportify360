@@ -90,7 +90,7 @@ export default function LiveT() {
                 </View>
                 <View style={styles.badgeContainer}>
                   <Text style={styles.badge}>🏆 ₹{item.prize || '0'}</Text>
-                  <Text style={styles.badge}>👥 {item.maxTeams || 'N/A'} Teams</Text>
+                  <Text style={styles.badge}>👥 {item.participantsCount || 'N/A'} Teams</Text>
                 </View>
               </View>
             </View>
@@ -116,9 +116,9 @@ export default function LiveT() {
           renderScene={renderScene}
           onIndexChange={setIndex}
           initialLayout={{ width: layout }}
-          renderTabBar={(props) => (
-            <TabBar
-              {...props}
+            renderTabBar={(props) => (
+              <TabBar
+                {...props}
               renderLabel={({ route }) => (
                 <Text style={{ color: 'white', fontWeight: 'bold' }}>{route.title}</Text>
               )}

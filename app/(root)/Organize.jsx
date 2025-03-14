@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
-  Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, View, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ActivityIndicator,
+  Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, View, ActivityIndicator,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
@@ -8,13 +8,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { collection, addDoc, Timestamp, doc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import RNPickerSelect from 'react-native-picker-select';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  Easing,
-  withSpring,
-} from 'react-native-reanimated';
 
 export default function OrganizeScreen() {
   const [formData, setFormData] = useState({
@@ -31,43 +24,6 @@ export default function OrganizeScreen() {
   const [showPicker, setShowPicker] = useState({ key: null });
   const [isLoading, setIsLoading] = useState(false);
 
-  const formOpacity = useSharedValue(0);
-  const buttonScale = useSharedValue(1);
-  const formTranslateY = useSharedValue(0); 
-
-  useEffect(() => {
-    formOpacity.value = withTiming(1, { duration: 1000, easing: Easing.ease });
-  }, []);
-
-  const animateButton = () => {
-    buttonScale.value = withSpring(0.95, { damping: 2, stiffness: 100 }, () => {
-      buttonScale.value = withSpring(1);
-    });
-  };
-
-  useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', (e) => {
-      formTranslateY.value = withTiming(-e.endCoordinates.height / 2, { duration: 300 });
-    });
-
-    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
-      formTranslateY.value = withTiming(0, { duration: 300 });
-    });
-
-    return () => {
-      keyboardDidShowListener.remove();
-      keyboardDidHideListener.remove();
-    };
-  }, []);
-
-  const formAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: formOpacity.value,
-    transform: [{ translateY: formTranslateY.value }],
-  }));
-
-  const buttonAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: buttonScale.value }],
-  }));
 
   const handleDateChange = (key, event, selectedDate) => {
     if (selectedDate) {
@@ -128,14 +84,15 @@ export default function OrganizeScreen() {
         contactInfo: formData.contactInfo,
         startDate: Timestamp.fromDate(formData.startDate),
         endDate: Timestamp.fromDate(formData.endDate),
-        adminId: doc(db, 'users', auth.currentUser.uid), 
+        adminId: auth.currentUser.uid, 
         createdAt: Timestamp.fromDate(new Date()),
         currentRound: 1, 
         totalRounds: Math.log2(Number(formData.maxParticipants)), 
         hasByes: false, 
         status: 'upcoming',
         type: 'knockout', 
-        participantsCount: 0, 
+        participantsCount: 0,
+        teamsCount:0 
       });
 
       const participantsRef = collection(db, 'Tournaments', tournamentRef.id, 'participants');
@@ -196,16 +153,10 @@ export default function OrganizeScreen() {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <LinearGradient colors={['#f0fbef', '#c0efbb']} style={{ flex: 1 }}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={{ flex: 1 }}
-        >
           <ScrollView style={{ marginTop: 90 }} showsVerticalScrollIndicator={false}>
             <Text style={styles.hText}>Organize Tournament</Text>
 
-            <Animated.View style={formAnimatedStyle}>
               <Text style={styles.text}>Tournament Name</Text>
               <TextInput
                 style={styles.iText}
@@ -278,12 +229,10 @@ export default function OrganizeScreen() {
                   )}
                 </View>
               ))}
-            </Animated.View>
+           
 
-            <Animated.View style={[styles.buttonContainer, buttonAnimatedStyle]}>
               <TouchableOpacity
                 onPress={() => {
-                  animateButton();
                   handleSubmit();
                 }}
                 disabled={isLoading}
@@ -292,11 +241,9 @@ export default function OrganizeScreen() {
                   {isLoading ? <ActivityIndicator color="white" /> : 'Submit'}
                 </Text>
               </TouchableOpacity>
-            </Animated.View>
           </ScrollView>
-        </KeyboardAvoidingView>
       </LinearGradient>
-    </TouchableWithoutFeedback>
+    
   );
 }
 

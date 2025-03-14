@@ -4,8 +4,6 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "./global.css";
 import { StatusBar } from "react-native";
-import TournamentMatchesScreen from './(root)/TournamentMatchesScreen.jsx';
-
 
 SplashScreen.preventAutoHideAsync();
 

@@ -23,6 +23,7 @@ import Animated, {
   Easing,
   withSpring,
 } from "react-native-reanimated";
+import sendEmail from "../../emailservice.js";
 
 export default function SignUp() {
   const router = useRouter();
@@ -51,25 +52,42 @@ export default function SignUp() {
       Alert.alert("Error", "All fields are required.");
       return;
     }
+  
     setLoading(true);
+  
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-
+  
       await setDoc(doc(db, "users", user.uid), {
         username: username.trim(),
         email: user.email,
         role: "user",
-        tournamnetsJoined: [],
-        tournamnetsCreated: [],
+        tournamentsJoined: [],
+        tournamentsCreated: [],
       });
-
-      Alert.alert("Success", "Account created successfully!", [
-        { text: "OK", onPress: () => router.replace("/SignIn") },
-      ]);
+  
+      await sendEmail(
+        email,
+        'Welcome to Sportify!',
+        'Congratulations, you have successfully signed up for Sportify. We are excited to have you on board!'
+      );
+  
+      Alert.alert(
+        'Success',
+        'Sign-up successful! A confirmation email has been sent.',
+        [
+          { text: "OK", onPress: () => router.replace("/LiveT") },
+        ]
+      );
     } catch (error) {
-      console.error("Firestore Write Error:", error);
-      Alert.alert("Error", getFriendlyErrorMessage(error.code));
+      console.error("Error:", error);
+  
+      if (error.code && error.code.startsWith("auth/")) {
+        Alert.alert("Error", getFriendlyErrorMessage(error.code));
+      } else {
+        Alert.alert("Error", "An error occurred. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

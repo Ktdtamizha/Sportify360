@@ -9,7 +9,6 @@ const MatchesPage = () => {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch matches for the selected tournament
   useEffect(() => {
     const matchesRef = collection(db, 'Tournaments', tournamentId, 'matches');
     const q = query(matchesRef);
@@ -23,7 +22,7 @@ const MatchesPage = () => {
       setLoading(false);
     });
 
-    return () => unsubscribe(); // Clean up the listener
+    return () => unsubscribe(); 
   }, [tournamentId]);
 
   if (loading) {
