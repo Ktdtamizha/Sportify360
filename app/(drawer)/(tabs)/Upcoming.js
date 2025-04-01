@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Text, View, FlatList, StyleSheet, Dimensions, ActivityIndicator, TouchableOpacity, Modal, TextInput, Alert } from 'react-native';
-import { collection, onSnapshot, doc, updateDoc, arrayUnion, getDoc, Timestamp, query, getDocs, where, addDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, getDoc, query, getDocs, where } from 'firebase/firestore';
 import { auth, db } from '../../firebase';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,6 +9,12 @@ import { TabView, TabBar } from 'react-native-tab-view';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { router } from 'expo-router';
+import axios from "axios";
+
+const API_URL = "http://10.11.154.88:5000";
+
+
+
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -26,21 +32,24 @@ const categories = [
 
 export default function ViewTournamentsScreen() {
   const [tournaments, setTournaments] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [index, setIndex] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedTournamentId, setSelectedTournamentId] = useState(null);
-  const [teamName, setTeamName] = useState('');
-  const [playersCount, setPlayersCount] = useState('');
   const [user, setUser] = useState(null);
   const [hasJoined, setHasJoined] = useState(false);
   const [joinedTournaments, setJoinedTournaments] = useState([]);
-  
+
+  const [teamName, setTeamName] = useState('');
+  const [mobileNum, setmobileNum] = useState('');
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [loading, setLoading] = useState(true);
+
 
   const scale = useSharedValue(1);
   const rotation = useSharedValue(0);
   const modalOpacity = useSharedValue(0);
-  const modalScale = useSharedValue(0.8); 
+  const modalScale = useSharedValue(0.8);
 
   const modalAnimatedStyle = useAnimatedStyle(() => ({
     opacity: modalOpacity.value,
@@ -189,15 +198,19 @@ export default function ViewTournamentsScreen() {
         return;
       }
   
+      // Check if user has already joined this tournament
       const participantsRef = collection(db, 'Tournaments', tournamentId, 'participants');
       const participantQuery = query(participantsRef, where('user', '==', auth.currentUser.uid));
       const participantSnapshot = await getDocs(participantQuery);
   
-      if (!participantSnapshot.empty) {
-        Alert.alert('Error', 'You have already joined this tournament.');
+      const hasAlreadyJoined = !participantSnapshot.empty;
+      
+      if (hasAlreadyJoined) {
+        Alert.alert('Info', 'You have already joined this tournament.');
         return;
       }
   
+      // If user hasn't joined before, proceed with joining process
       const initializedParticipantsQuery = query(participantsRef, where('user', '==', null));
       const initializedParticipantsSnapshot = await getDocs(initializedParticipantsQuery);
   
@@ -219,6 +232,14 @@ export default function ViewTournamentsScreen() {
       await updateDoc(tournamentRef, {
         participantsCount: tournamentData.participantsCount + 1,
       });
+      
+      // Update local storage
+      const updatedJoinedTournaments = [...joinedTournaments, tournamentId];
+      setJoinedTournaments(updatedJoinedTournaments);
+      await AsyncStorage.setItem(
+        `joinedTournaments_${auth.currentUser.uid}`,
+        JSON.stringify(updatedJoinedTournaments)
+      );
   
       const matchesRef = collection(db, 'Tournaments', tournamentId, 'matches');
       const matchesQuery = query(matchesRef, where('round', '==', 1));
@@ -246,10 +267,60 @@ export default function ViewTournamentsScreen() {
         return;
       }
   
-      Alert.alert('Success', 'You have successfully joined the tournament!');
+      Alert.alert('Success', 'You have successfully joined the tournament! An SMS confirmation has been sent.');
     } catch (error) {
       console.error('Error joining tournament:', error);
       Alert.alert('Error', 'Failed to join the tournament.');
+    }
+  };
+
+  
+  const sendOtp = async () => {
+    if (!mobileNum) {
+      Alert.alert("Error", "Please enter a valid mobile number.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await axios.post(`${API_URL}/send-otp`, { phone: mobileNum });
+      if (response.data.success) {
+        setOtpSent(true);
+        Alert.alert("OTP Sent", "Please check your phone for the OTP.");
+      } else {
+        Alert.alert("Error", response.data.message || "Failed to send OTP.");
+      }
+    } catch (error) {
+      Alert.alert("Error", "An error occurred while sending OTP.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const verifyOtp = async () => {
+    if (!otp) {
+      Alert.alert("Error", "Please enter the OTP.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await axios.post(`${API_URL}/verify-otp`, { phone: mobileNum, otp });
+      if (response.data.success) {
+        Alert.alert("Success", "OTP verified! You can now join the tournament.");
+        // Now allow the user to join the tournament
+        handleJoinTournament(selectedTournamentId, teamName);
+        closeModal(); // Close the modal after successful verification
+      } else {
+        Alert.alert("Error", "Invalid OTP. Please try again.");
+      }
+    } catch (error) {
+      Alert.alert("Error", "An error occurred while verifying OTP.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -341,34 +412,64 @@ export default function ViewTournamentsScreen() {
             />
           )}
         />
-        <Modal visible={modalVisible} transparent animationType="none">
-          <View style={styles.modalContainer}>
-            <Animated.View style={[styles.modalContent, modalAnimatedStyle]}>
-              <Text style={styles.modalTitle}>Enter Team Details</Text>
+            <Modal visible={modalVisible} transparent animationType="none">
+      <View style={styles.modalContainer}>
+        <Animated.View style={[styles.modalContent]}>
+          <Text style={styles.modalTitle}>Enter Team Details</Text>
+
+          {/* Team Name */}
+          <TextInput
+            style={styles.input}
+            placeholder="Team Name"
+            value={teamName}
+            onChangeText={setTeamName}
+          />
+
+          {/* Mobile Number Input */}
+          {!otpSent ? (
+            <>
               <TextInput
                 style={styles.input}
-                placeholder="Team Name"
-                value={teamName}
-                onChangeText={setTeamName}
+                placeholder="Mobile Number"
+                value={mobileNum}
+                onChangeText={setmobileNum}
               />
+              <TouchableOpacity style={styles.joinConfirmButton} onPress={sendOtp} disabled={loading}>
+                <Text style={styles.joinButtonText}>{loading ? "Sending OTP..." : "Send OTP"}</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              {/* OTP Input */}
               <TextInput
                 style={styles.input}
-                placeholder="Number of Players"
-                value={playersCount}
-                onChangeText={setPlayersCount}
+                placeholder="Enter OTP"
+                value={otp}
+                onChangeText={setOtp}
                 keyboardType="numeric"
               />
-              <View style={styles.buttonRow}>
-                <TouchableOpacity style={styles.cancelButton} onPress={closeModal}>
-                  <Text style={styles.cancelButtonText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.joinConfirmButton} onPress={() => handleJoinTournament(selectedTournamentId, teamName)}>
-                  <Text style={styles.joinButtonText}>Confirm</Text>
-                </TouchableOpacity>
-              </View>
-            </Animated.View>
+              <TouchableOpacity style={styles.joinConfirmButton} onPress={verifyOtp} disabled={loading}>
+                <Text style={styles.joinButtonText}>{loading ? "Verifying OTP..." : "Verify OTP"}</Text>
+              </TouchableOpacity>
+            </>
+          )}
+
+          {/* Cancel and Confirm Buttons */}
+          <View style={styles.buttonRow}>
+            <TouchableOpacity style={styles.cancelButton} onPress={closeModal}>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.joinConfirmButton}
+              onPress={() => otpSent && verifyOtp()} // Only allow join if OTP is verified
+              disabled={loading || !otpSent}
+            >
+              <Text style={styles.joinButtonText}>Confirm</Text>
+            </TouchableOpacity>
           </View>
-        </Modal>
+        </Animated.View>
+      </View>
+    </Modal>
       </SafeAreaView>
     </LinearGradient>
   );
@@ -466,49 +567,51 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     padding: 20,
+    width: 300,
     borderRadius: 10,
-    width: Dimensions.get('window').width * 0.8,
+    alignItems: "center",
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 20,
     marginBottom: 10,
-    textAlign: 'center',
+    fontWeight: "bold",
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
+    width: "100%",
     padding: 10,
-    marginBottom: 10,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 5,
   },
   buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
   },
   cancelButton: {
-    backgroundColor: '#ff4444',
+    backgroundColor: "red",
     padding: 10,
     borderRadius: 5,
-    flex: 1,
-    marginRight: 5,
   },
   cancelButtonText: {
-    color: 'white',
-    textAlign: 'center',
+    color: "white",
+    fontWeight: "bold",
   },
   joinConfirmButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: "#28a745",
     padding: 10,
     borderRadius: 5,
-    flex: 1,
-    marginLeft: 5,
+  },
+  joinButtonText: {
+    color: "white",
+    fontWeight: "bold",
   },
 });

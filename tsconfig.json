@@ -14,5 +14,5 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "nativewind-env.d.ts"
-, "app/(root)/Display.jsx", "app/(root)/Explore.jsx", "app/index.jsx", "app/(root)/JoinTournament.jsx", "app/(root)/Organize.jsx", "app/(root)/OrgDashboard.jsx", "app/(root)/SignIn.jsx", "app/(root)/SignUp.jsx", "app/(drawer)/(tabs)/_layout.jsx", "app/(drawer)/(tabs)/LiveT.jsx", "app/(drawer)/(tabs)/PastT.jsx", "app/(drawer)/(tabs)/Upcoming.jsx", "app/_layout.jsx"  ]
+, "app/(root)/Display.jsx", "app/(root)/Explore.jsx", "app/index.js", "app/(root)/JoinTournament.jsx", "app/(root)/Organize.js", "app/(root)/OrgDashboard.js", "app/(root)/SignIn.js", "app/(root)/SignUp.js", "app/(drawer)/(tabs)/_layout.js", "app/(drawer)/(tabs)/LiveT.js", "app/(drawer)/(tabs)/PastT.js", "app/(drawer)/(tabs)/Upcoming.js", "app/_layout.js"  ]
 }

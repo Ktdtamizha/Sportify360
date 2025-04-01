@@ -5,7 +5,7 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { collection, addDoc, Timestamp, doc } from 'firebase/firestore';
+import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import RNPickerSelect from 'react-native-picker-select';
 

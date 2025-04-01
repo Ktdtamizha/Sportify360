@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { DrawerContentScrollView, DrawerItemList } from "@react-navigation/drawer";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import { auth, db } from "../app/firebase.jsx"; 
+import { auth, db } from "../app/firebase.js"; 
 import { onAuthStateChanged, signOut } from "firebase/auth"; 
 import { doc, getDoc } from "firebase/firestore";
 import { router } from "expo-router";

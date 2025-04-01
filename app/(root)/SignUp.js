@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
-import { auth, db } from "../firebase.jsx";
+import { auth, db } from "../firebase.js";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { setDoc, doc } from "firebase/firestore";
 import {

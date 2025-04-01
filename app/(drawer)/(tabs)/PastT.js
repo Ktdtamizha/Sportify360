@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Text, View, FlatList, StyleSheet, Dimensions, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../../firebase.jsx';
+import { db } from '../../firebase.js';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { TabView, TabBar } from 'react-native-tab-view';
-import { router } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 
 const categories = [
   { key: 'Cricket', title: 'Cricket' },
@@ -14,10 +14,11 @@ const categories = [
   { key: 'Football', title: 'Football' },
 ];
 
-export default function LiveT() {
+export default function ViewTournamentsScreen() {
   const [tournaments, setTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [index, setIndex] = useState(0);
+  const navigation = useNavigation();
 
   useEffect(() => {
     const fetchTournaments = async () => {
@@ -55,7 +56,7 @@ export default function LiveT() {
   }, []);
 
   const renderScene = ({ route }) => {
-    const liveTournaments = tournaments.filter((t) => t.status === 'Live' && t.sport === route.key);
+    const liveTournaments = tournaments.filter((t) => t.status === 'Past' && t.sport === route.key);
 
     if (loading) {
       return (
@@ -72,7 +73,7 @@ export default function LiveT() {
         contentContainerStyle={styles.listContainer}
         renderItem={({ item }) => (
           <TouchableOpacity
-            onPress={() => router.push(`/TournamentMatchesScreen?tournamentId=${item.id}`)}
+            onPress={() => navigation.navigate('TournamentMatches', { tournamentId: item.id })}
           >
             <View style={styles.cardContainer}>
               <View style={styles.card}>
@@ -90,7 +91,7 @@ export default function LiveT() {
                 </View>
                 <View style={styles.badgeContainer}>
                   <Text style={styles.badge}>🏆 ₹{item.prize || '0'}</Text>
-                  <Text style={styles.badge}>👥 {item.participantsCount || 'N/A'} Teams</Text>
+                  <Text style={styles.badge}>👥 {item.maxTeams || 'N/A'} Teams</Text>
                 </View>
               </View>
             </View>
@@ -116,9 +117,9 @@ export default function LiveT() {
           renderScene={renderScene}
           onIndexChange={setIndex}
           initialLayout={{ width: layout }}
-            renderTabBar={(props) => (
-              <TabBar
-                {...props}
+          renderTabBar={(props) => (
+            <TabBar
+              {...props}
               renderLabel={({ route }) => (
                 <Text style={{ color: 'white', fontWeight: 'bold' }}>{route.title}</Text>
               )}
