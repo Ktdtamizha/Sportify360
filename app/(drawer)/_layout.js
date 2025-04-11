@@ -2,7 +2,7 @@ import { StyleSheet, TouchableOpacity, View, Image, StatusBar } from 'react-nati
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import TabLayout from './(tabs)/_layout.js';
 import { Ionicons } from '@expo/vector-icons';
-import CustomDrawer from '../../components/CustomDrawer.js';
+import CustomDrawer from '../components/CustomDrawer.js';
 import { Text } from 'react-native';
 import TournamentDetails from '../(root)/OrgDashboard.js';
 

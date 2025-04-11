@@ -4,12 +4,19 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "./global.css";
 import { StatusBar } from "react-native";
+import * as Notifications from 'expo-notifications';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  
-
   const [fontsLoaded] = useFonts({
     SpaceMono: require("./assets/fonts/SpaceMono-Regular.ttf"),
     Bangers: require("./assets/fonts/Bangers-Regular.ttf"),
@@ -26,13 +33,12 @@ export default function RootLayout() {
     hideSplash();
   }, [fontsLoaded]);
 
-  if (!fontsLoaded) return null; 
+  if (!fontsLoaded) return null;
+
   return (
     <>
-    <StatusBar hidden={true}/>
-    <Stack screenOptions={{ headerShown: false }}>
-      </Stack>
+      <StatusBar hidden={true} />
+      <Stack screenOptions={{ headerShown: false }} />
     </>
   );
 }
-

@@ -9,8 +9,7 @@ import Hub from './Hub';
 import Add from './Add';
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '@/app/firebase';
-
+import { auth } from '../../../utils/firebase.js';
 
 export default function TabLayout() {
   const [userLoggedIn, setUserLoggedIn] = useState(false);

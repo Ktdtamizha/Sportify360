@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
-import { auth, db } from "../firebase.js";
+import { auth, db } from "../../utils/firebase.js";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { setDoc, doc } from "firebase/firestore";
 import {
@@ -23,7 +23,7 @@ import Animated, {
   Easing,
   withSpring,
 } from "react-native-reanimated";
-import sendEmail from "../../emailservice.js";
+import sendEmail from "../../utils/emailservice.js";
 
 export default function SignUp() {
   const router = useRouter();
@@ -63,8 +63,7 @@ export default function SignUp() {
         username: username.trim(),
         email: user.email,
         role: "user",
-        tournamentsJoined: [],
-        tournamentsCreated: [],
+        expoPushToken:null
       });
   
       await sendEmail(

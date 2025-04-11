@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Text, View, FlatList, StyleSheet, Dimensions, ActivityIndicator, TouchableOpacity, Modal, TextInput, Alert } from 'react-native';
 import { collection, onSnapshot, doc, updateDoc, getDoc, query, getDocs, where } from 'firebase/firestore';
-import { auth, db } from '../../firebase';
+import { auth, db } from '../../../utils/firebase';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
@@ -11,7 +11,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { router } from 'expo-router';
 import axios from "axios";
 
-const API_URL = "http://10.11.154.88:5000";
+const API_URL = "http://10.16.52.209:5000";
 
 
 
@@ -51,10 +51,6 @@ export default function ViewTournamentsScreen() {
   const modalOpacity = useSharedValue(0);
   const modalScale = useSharedValue(0.8);
 
-  const modalAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: modalOpacity.value,
-    transform: [{ scale: modalScale.value }],
-  }));
 
   useEffect(() => {
     if (modalVisible) {
@@ -198,19 +194,17 @@ export default function ViewTournamentsScreen() {
         return;
       }
   
-      // Check if user has already joined this tournament
       const participantsRef = collection(db, 'Tournaments', tournamentId, 'participants');
       const participantQuery = query(participantsRef, where('user', '==', auth.currentUser.uid));
       const participantSnapshot = await getDocs(participantQuery);
   
       const hasAlreadyJoined = !participantSnapshot.empty;
-      
+  
       if (hasAlreadyJoined) {
         Alert.alert('Info', 'You have already joined this tournament.');
         return;
       }
   
-      // If user hasn't joined before, proceed with joining process
       const initializedParticipantsQuery = query(participantsRef, where('user', '==', null));
       const initializedParticipantsSnapshot = await getDocs(initializedParticipantsQuery);
   
@@ -232,7 +226,7 @@ export default function ViewTournamentsScreen() {
       await updateDoc(tournamentRef, {
         participantsCount: tournamentData.participantsCount + 1,
       });
-      
+  
       // Update local storage
       const updatedJoinedTournaments = [...joinedTournaments, tournamentId];
       setJoinedTournaments(updatedJoinedTournaments);
@@ -254,8 +248,7 @@ export default function ViewTournamentsScreen() {
           await assignTeamToMatch(matchRef, teamName, auth.currentUser.uid);
           assigned = true;
           break;
-        }
-        else if (matchData.team2 === null || matchData.team2 === '') {
+        } else if (matchData.team2 === null || matchData.team2 === '') {
           await assignTeamToMatch(matchRef, teamName, auth.currentUser.uid);
           assigned = true;
           break;
@@ -267,12 +260,39 @@ export default function ViewTournamentsScreen() {
         return;
       }
   
-      Alert.alert('Success', 'You have successfully joined the tournament! An SMS confirmation has been sent.');
+      // ✅ Send Push Notification to Tournament Organizer
+      if (tournamentData.adminId) {
+        const organizerDoc = await getDoc(doc(db, 'users', tournamentData.adminId));
+        if (organizerDoc.exists()) {
+          const organizerData = organizerDoc.data();
+          const pushToken = organizerData.expoPushToken;
+  
+          if (pushToken) {
+            await fetch('https://exp.host/--/api/v2/push/send', {
+              method: 'POST',
+              headers: {
+                Accept: 'application/json',
+                'Accept-Encoding': 'gzip, deflate',
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                to: pushToken,
+                sound: 'default',
+                title: '🎯 New Player Joined!',
+                body: `A player just joined your tournament "${tournamentData.name}".`,
+                data: { screen: 'TournamentDetails', tournamentId: tournamentId },
+              }),
+            });
+          }
+        }
+      }
     } catch (error) {
       console.error('Error joining tournament:', error);
       Alert.alert('Error', 'Failed to join the tournament.');
     }
   };
+  
+
 
   
   const sendOtp = async () => {
@@ -311,9 +331,8 @@ export default function ViewTournamentsScreen() {
       const response = await axios.post(`${API_URL}/verify-otp`, { phone: mobileNum, otp });
       if (response.data.success) {
         Alert.alert("Success", "OTP verified! You can now join the tournament.");
-        // Now allow the user to join the tournament
         handleJoinTournament(selectedTournamentId, teamName);
-        closeModal(); // Close the modal after successful verification
+        closeModal();
       } else {
         Alert.alert("Error", "Invalid OTP. Please try again.");
       }
@@ -417,7 +436,6 @@ export default function ViewTournamentsScreen() {
         <Animated.View style={[styles.modalContent]}>
           <Text style={styles.modalTitle}>Enter Team Details</Text>
 
-          {/* Team Name */}
           <TextInput
             style={styles.input}
             placeholder="Team Name"
@@ -425,7 +443,6 @@ export default function ViewTournamentsScreen() {
             onChangeText={setTeamName}
           />
 
-          {/* Mobile Number Input */}
           {!otpSent ? (
             <>
               <TextInput
@@ -440,7 +457,6 @@ export default function ViewTournamentsScreen() {
             </>
           ) : (
             <>
-              {/* OTP Input */}
               <TextInput
                 style={styles.input}
                 placeholder="Enter OTP"
@@ -454,14 +470,13 @@ export default function ViewTournamentsScreen() {
             </>
           )}
 
-          {/* Cancel and Confirm Buttons */}
           <View style={styles.buttonRow}>
             <TouchableOpacity style={styles.cancelButton} onPress={closeModal}>
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.joinConfirmButton}
-              onPress={() => otpSent && verifyOtp()} // Only allow join if OTP is verified
+              onPress={() => otpSent && verifyOtp()}
               disabled={loading || !otpSent}
             >
               <Text style={styles.joinButtonText}>Confirm</Text>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
-import { db } from '../firebase';
+import { db } from '../../utils/firebase';
 import { useLocalSearchParams } from 'expo-router';
 
 const MatchesPage = () => {
@@ -42,7 +42,6 @@ const MatchesPage = () => {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.matchCard}>
-            <Text style={styles.matchTitle}>Match {item.matchId}</Text>
             <Text style={styles.matchDetails}>
               {item.team1 || 'TBD'} vs {item.team2 || 'TBD'}
             </Text>
@@ -69,10 +68,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
+    marginTop:40
   },
   matchCard: {
     backgroundColor: 'white',
@@ -92,8 +92,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   matchDetails: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: 26,
+    fontWeight:'600',
+    color: '#444',
     marginBottom: 8,
   },
   matchStatus: {

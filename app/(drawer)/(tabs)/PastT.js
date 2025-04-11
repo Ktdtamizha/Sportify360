@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Text, View, FlatList, StyleSheet, Dimensions, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../../firebase.js';
+import { db } from '../../../utils/firebase.js';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';

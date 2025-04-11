@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, Keyboard, TouchableWithoutFeedback, KeyboardAvoidingView, Platform } from "react-native";
 import { useRouter } from "expo-router";
-import { auth, db } from "../firebase.js";
+import { auth, db } from "../../utils/firebase.js";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import * as Notifications from "expo-notifications";
+import * as Device from "expo-device";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -33,22 +35,62 @@ export default function SignIn() {
     });
   };
 
+
+  const registerForPushNotificationsAsync = async () => {
+    let token;
+    if (Device.isDevice) {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+  
+      if (existingStatus !== "granted") {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+  
+      if (finalStatus !== "granted") {
+        alert("Failed to get push token for push notification!");
+        return;
+      }
+  
+      token = (await Notifications.getExpoPushTokenAsync()).data;
+      console.log("Expo Push Token:", token);
+    } else {
+      alert("Must use physical device for Push Notifications");
+    }
+  
+    return token;
+  };
+  
+
   const handleSubmit = async () => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-
-      const userDoc = await getDoc(doc(db, "users", user.uid));
+  
+      const userRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userRef);
+  
       if (userDoc.exists()) {
         const userData = userDoc.data();
-        console.log("User's Joined Tournaments:", userData.joinedtournaments);
+  
+        // 1. Get push token from device
+        const pushToken = await registerForPushNotificationsAsync();
+  
+        // 2. If the new token is different from what’s stored, update it
+        if (pushToken && userData.expoPushToken !== pushToken) {
+          await updateDoc(userRef, {
+            expoPushToken: pushToken,
+          });
+          console.log("Expo Push Token updated:", pushToken);
+        }
       }
-
+  
       router.push("/LiveT");
     } catch (error) {
       setErrorMessage(error.message);
     }
   };
+  
 
   const titleStyle = useAnimatedStyle(() => ({
     opacity: titleOpacity.value,
