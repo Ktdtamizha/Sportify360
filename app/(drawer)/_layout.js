@@ -25,11 +25,7 @@ const DrawerLayout = () => {
             <Text style={styles.headerTitle}>PORTIFY</Text>
           </View>),
           headerTintColor: 'white',
-          headerRight: () => (
-            <TouchableOpacity onPress={() => {}} style={styles.headerRight}>
-              <Ionicons name="notifications-outline" size={28} color="white"/>
-            </TouchableOpacity>
-          ),
+          
         }}
       >
         <Drawer.Screen name="Home" component={TabLayout} />

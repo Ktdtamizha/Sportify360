@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, Keyboard, TouchableWithoutFeedback, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, TextInput, ActivityIndicator, TouchableOpacity, StyleSheet, StatusBar, Keyboard, TouchableWithoutFeedback, KeyboardAvoidingView, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { auth, db } from "../../utils/firebase.js";
 import { signInWithEmailAndPassword } from "firebase/auth";
@@ -19,6 +19,7 @@ export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const titleOpacity = useSharedValue(0);
   const inputOpacity = useSharedValue(0);
@@ -63,6 +64,7 @@ export default function SignIn() {
   
 
   const handleSubmit = async () => {
+    setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -89,6 +91,10 @@ export default function SignIn() {
     } catch (error) {
       setErrorMessage(error.message);
     }
+    finally {
+      setLoading(false);
+    }
+
   };
   
 
@@ -142,8 +148,14 @@ export default function SignIn() {
                 handleSubmit();
               }}
               style={styles.button}
+              disabled={loading}
             >
+              {loading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+
               <Text style={styles.buttonText}>SUBMIT</Text>
+              )}
             </TouchableOpacity>
           </Animated.View>
 
