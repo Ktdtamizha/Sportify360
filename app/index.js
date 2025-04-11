@@ -19,6 +19,7 @@ export default function Index() {
   const logoScale = useSharedValue(1);
   const textOpacity = useSharedValue(0);
   const buttonTranslateY = useSharedValue(50);
+  const ballBounce = useSharedValue(0); 
 
   const logoStyle = useAnimatedStyle(() => {
     return {
@@ -38,6 +39,12 @@ export default function Index() {
     };
   });
 
+  const ballStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateY: ballBounce.value }], 
+    };
+  });
+
   React.useEffect(() => {
     logoScale.value = withRepeat(
       withSequence(
@@ -54,6 +61,15 @@ export default function Index() {
       damping: 10,
       stiffness: 100,
     });
+
+    ballBounce.value = withRepeat(
+      withSequence(
+        withTiming(-40, { duration: 500 }), 
+        withTiming(0, { duration: 500 })
+      ),
+      -1, 
+      true
+    );
   }, []);
 
   return (
@@ -86,7 +102,9 @@ export default function Index() {
             S
           </Text>
           P
+          <Animated.View style={ballStyle}>
           <Image style={{ width: 38, height: 34 }} source={img} />
+          </Animated.View>
           RTIFY
         </Animated.Text>
 

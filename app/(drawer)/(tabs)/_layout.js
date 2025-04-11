@@ -5,7 +5,7 @@ const Tab = createBottomTabNavigator();
 import LiveT from './LiveT';
 import PastT from './PastT';
 import Up from './Upcoming';
-import Hub from './Hub';
+import Scorer from './Hub';
 import Add from './Add';
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -89,14 +89,14 @@ export default function TabLayout() {
           }}
         />
         <Tab.Screen
-          name="Hub"
-          component={Hub}
+          name="Find"
+          component={Scorer}
           options={{
-            title: 'HUB',
+            title: 'Find',
             tabBarIcon: ({ focused }) => (
               <View style={styles.iconContainer}>
-                 <Ionicons name={focused ?'globe-outline' : 'globe'} size={26} color={focused ? 'black' : '#999'} />
-                {focused && <Text style={styles.focusedText}>HUB</Text>}
+                 <Ionicons name={focused ? 'search' : 'search-outline'} size={26} color={focused ? 'black' : '#999'} />
+                {focused && <Text style={styles.focusedText}>Find</Text>}
               </View>
             ),
           }}
