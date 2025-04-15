@@ -75,10 +75,8 @@ export default function SignIn() {
       if (userDoc.exists()) {
         const userData = userDoc.data();
   
-        // 1. Get push token from device
         const pushToken = await registerForPushNotificationsAsync();
   
-        // 2. If the new token is different from what’s stored, update it
         if (pushToken && userData.expoPushToken !== pushToken) {
           await updateDoc(userRef, {
             expoPushToken: pushToken,

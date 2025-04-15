@@ -19,13 +19,7 @@ export default function Index() {
   const logoScale = useSharedValue(1);
   const textOpacity = useSharedValue(0);
   const buttonTranslateY = useSharedValue(50);
-  const ballBounce = useSharedValue(0); 
-
-  const logoStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: logoScale.value }],
-    };
-  });
+  const ballBounce = useSharedValue(0); ;
 
   const textStyle = useAnimatedStyle(() => {
     return {
@@ -75,14 +69,11 @@ export default function Index() {
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
       <View className="flex-1 justify-center items-center bg-black">
-        <Animated.View className="relative items-center mb-6" style={logoStyle}>
           <Image
             source={logo}
             style={{ width: 300, height: 300 }}
             resizeMode="contain"
           />
-        </Animated.View>
-
         <Animated.Text
           style={[
             {

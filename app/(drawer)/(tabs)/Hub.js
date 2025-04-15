@@ -11,7 +11,7 @@ import { useNavigation } from '@react-navigation/native';
 export default function NearbyTournamentsScreen() {
   const [nearbyTournaments, setNearbyTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [radius, setRadius] = useState(30000); // 30km
+  const [radius, setRadius] = useState(30000);
   const [userCoords, setUserCoords] = useState(null);
 
   const navigation = useNavigation();
@@ -66,7 +66,6 @@ export default function NearbyTournamentsScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Toggle Button */}
       <TouchableOpacity
       style={styles.toggleButton}
       onPress={() => navigation.navigate('Upcoming')}
@@ -146,7 +145,7 @@ const styles = StyleSheet.create({
   },
   distance: {
     marginTop: 6,
-    color: '#007AFF',
+    color: 'green',
     fontWeight: '500',
   },
   loadingContainer: {
@@ -166,7 +165,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   toggleButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: 'green',
     paddingVertical: 10,
     borderRadius: 10,
     marginBottom: 16,

@@ -31,7 +31,6 @@ export default function OrganizeScreen() {
   const [showPicker, setShowPicker] = useState({ key: null });
   const [isLoading, setIsLoading] = useState(false);
 
-  // 🔥 Location fetching on component mount
   useEffect(() => {
     getLocationAutomatically();
   }, []);

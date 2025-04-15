@@ -29,7 +29,7 @@ const UpdateMatchScreen = () => {
     fetchMatch();
   }, [matchId]);
   
-  // Inside your component
+  
   const handleSaveResult = async () => {
     setUpdating(true);
     const success = await saveMatchResult({ tournamentId, match, matchId, winner });

@@ -11,7 +11,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { router } from 'expo-router';
 import axios from "axios";
 
-const API_URL = "http://10.16.52.209:5000";
+const API_URL = "http://10.11.154.88:5000";
 
 
 
@@ -227,7 +227,6 @@ export default function ViewTournamentsScreen() {
         participantsCount: tournamentData.participantsCount + 1,
       });
   
-      // Update local storage
       const updatedJoinedTournaments = [...joinedTournaments, tournamentId];
       setJoinedTournaments(updatedJoinedTournaments);
       await AsyncStorage.setItem(
@@ -260,7 +259,6 @@ export default function ViewTournamentsScreen() {
         return;
       }
   
-      // ✅ Send Push Notification to Tournament Organizer
       if (tournamentData.adminId) {
         const organizerDoc = await getDoc(doc(db, 'users', tournamentData.adminId));
         if (organizerDoc.exists()) {
@@ -292,7 +290,6 @@ export default function ViewTournamentsScreen() {
     }
   };
   
-
 
   
   const sendOtp = async () => {

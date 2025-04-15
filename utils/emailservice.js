@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://10.16.52.209:5000';
+const API_URL = 'http://10.11.154.88:5000';
 
 const sendEmail = async (to, subject, text) => {
   try {

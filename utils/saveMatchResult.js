@@ -61,7 +61,6 @@ export const saveMatchResult = async ({ tournamentId, match, matchId, winner }) 
       winner: winner
     });
 
-    // Advance winner to next match
     if (match.nextMatch) {
       const nextMatchRef = doc(db, 'Tournaments', tournamentId, 'matches', match.nextMatch);
       const nextMatchSnap = await getDoc(nextMatchRef);
@@ -79,13 +78,11 @@ export const saveMatchResult = async ({ tournamentId, match, matchId, winner }) 
       }
     }
 
-    // Check round completion
     if (await checkRoundCompletion(tournamentId, match.round)) {
       await updateDoc(doc(db, 'Tournaments', tournamentId), {
         currentRound: match.round + 1,
       });
 
-      // Check if all matches are completed
       const matchesSnapshot = await getDocs(collection(db, 'Tournaments', tournamentId, 'matches'));
       const allMatches = matchesSnapshot.docs.map(doc => doc.data());
       const allCompleted = allMatches.every(m => m.status === 'completed');
